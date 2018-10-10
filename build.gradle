@@ -1,10 +1,9 @@
 buildscript {
-    dependencies {
-        classpath group: 'de.dynamicfiles.projects.gradle.plugins', name: 'javafx-gradle-plugin', version: '8.8.2'
-    }
     repositories {
-        mavenLocal()
         mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.gradle:osdetector-gradle-plugin:1.6.0'
     }
 }
 
@@ -13,26 +12,56 @@ plugins {
     id 'application'
 }
 
+
 mainClassName = 'com.usthb.dmtk.Main'
 group 'com.usthb'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
 
-apply plugin: 'javafx-gradle-plugin'
+apply plugin: 'application'
+apply plugin: 'com.google.osdetector'
 
-jfx {
-    mainClass = 'com.usthb.dmtk.Main'
-    vendor = 'YourName'
+ext.platform = osdetector.os == 'osx' ? 'mac' : osdetector.os
+
+dependencies {
+    compile fileTree(dir: 'lib', include: ['*.jar'])
+    compile "org.openjfx:javafx-base:11:$platform"
+    compile "org.openjfx:javafx-graphics:11:$platform"
+    compile "org.openjfx:javafx-controls:11:$platform"
+    compile "org.openjfx:javafx-fxml:11:$platform"
 }
 
+compileJava {
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+                '--add-modules', 'javafx.controls',
+                '--add-modules', 'javafx.graphics',
+                '--add-modules', 'javafx.base',
+                '--add-modules', 'javafx.fxml',
+                '--add-exports=javafx.graphics/com.sun.javafx.util=ALL-UNNAMED',
+                '--add-exports=javafx.base/com.sun.javafx.reflect=ALL-UNNAMED',
+                '--add-exports=javafx.base/com.sun.javafx.beans=ALL-UNNAMED'
+        ]
+    }
+}
+
+run {
+    doFirst {
+        jvmArgs = [
+                '--module-path', classpath.asPath,
+                '--add-modules', 'javafx.controls',
+                '--add-modules', 'javafx.graphics',
+                '--add-modules', 'javafx.base',
+                '--add-modules', 'javafx.fxml',
+                '--add-exports=javafx.graphics/com.sun.javafx.util=ALL-UNNAMED',
+                '--add-exports=javafx.base/com.sun.javafx.reflect=ALL-UNNAMED',
+                '--add-exports=javafx.base/com.sun.javafx.beans=ALL-UNNAMED'
+        ]
+    }
+}
 
 repositories {
     mavenLocal()
     mavenCentral()
-}
-
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile fileTree(dir: 'lib', include: ['*.jar'])
 }
