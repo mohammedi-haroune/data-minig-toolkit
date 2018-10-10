@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="837.0" prefWidth="567.0" style="-fx-background-color: #eaeaea;" stylesheets="@../css/material-fx-v0_3.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.usthb.dmtk.controllers.InstanceController">
+   <children>
+       <VBox styleClass="card">
+           <VBox.margin>
+               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+           </VBox.margin>
+           <Label styleClass="card-title" text="Relation Information" />
+           <Label fx:id="relationName" text="name: ">
+               <VBox.margin>
+                   <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </VBox.margin>
+           </Label>
+           <Label fx:id="numInstances" text="instances: ">
+               <VBox.margin>
+                   <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </VBox.margin>
+           </Label>
+           <Label fx:id="numAttributes" text="attributes: ">
+               <VBox.margin>
+                   <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </VBox.margin>
+           </Label>
+       </VBox>
+       <Label styleClass="card-title" text="Instances: ">
+         <VBox.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </VBox.margin></Label>
+       <TableView fx:id="instances" prefHeight="452.0" prefWidth="557.0">
+        <columns>
+        </columns>
+         <VBox.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </VBox.margin>
+      </TableView>
+       <Label styleClass="card-title" text="Attributes: ">
+         <VBox.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </VBox.margin></Label>
+       <TableView fx:id="attributes" layoutX="10.0" layoutY="10.0" prefHeight="325.0" prefWidth="557.0">
+         <columns>
+            <TableColumn fx:id="name" prefWidth="89.0" text="name" />
+            <TableColumn fx:id="type" minWidth="3.0" prefWidth="61.0" text="type" />
+         </columns>
+         <VBox.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </VBox.margin>
+      </TableView>
+   </children>
+</VBox>
