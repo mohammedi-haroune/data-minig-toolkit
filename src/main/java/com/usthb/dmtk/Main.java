@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import jfxtras.styles.jmetro8.*;
 
 public class Main extends Application {
 
@@ -22,11 +23,14 @@ public class Main extends Application {
         homeLoader.setController(home);
         BorderPane mainPane = homeLoader.load();
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/table.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/instance.fxml"));
         Parent instances = loader.load();
         InstanceController instanceController = loader.getController();
         instanceController.setHome(home);
         mainPane.setLeft(instances);
+
+        //new JMetro(JMetro.Style.LIGHT).applyTheme(mainPane);
+        new JMetro(JMetro.Style.LIGHT).applyTheme(instances);
 
         primaryStage.setMaximized(true);
         primaryStage.setTitle("Data Mining Tool");
