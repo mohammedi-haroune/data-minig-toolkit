@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.pixelduke.control.Ribbon?>
-<?import com.pixelduke.control.ribbon.Column?>
-<?import com.pixelduke.control.ribbon.QuickAccessBar?>
-<?import com.pixelduke.control.ribbon.RibbonGroup?>
-<?import com.pixelduke.control.ribbon.RibbonItem?>
-<?import com.pixelduke.control.ribbon.RibbonTab?>
-<?import java.lang.String?>
-<?import javafx.collections.FXCollections?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.BorderPane?>
-
 <!--
   ~ Copyright (c) 2016, 2018 Pixel Duke (Pedro Duque Vieira - www.pixelduke.com)
   ~  All rights reserved.
@@ -42,6 +26,25 @@
   ~  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
   ~  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
+
+<?import com.pixelduke.control.Ribbon?>
+<?import com.pixelduke.control.ribbon.Column?>
+<?import com.pixelduke.control.ribbon.QuickAccessBar?>
+<?import com.pixelduke.control.ribbon.RibbonGroup?>
+<?import com.pixelduke.control.ribbon.RibbonItem?>
+<?import com.pixelduke.control.ribbon.RibbonTab?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
 <BorderPane id="BorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="514.0" prefWidth="1059.0" styleClass="background" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
     <top>
@@ -78,110 +81,112 @@
                     <ribbonGroups>
                         <RibbonGroup title="File">
                             <nodes>
-                                <Button onAction="#open" contentDisplay="TOP" text="Open" wrapText="true">
+                                <Button contentDisplay="TOP" onAction="#open" prefHeight="100.0" prefWidth="75.0" text="Open" wrapText="true">
                                     <graphic>
                                         <ImageView>
                                             <Image url="@../icons/icons8_Open_32px_3.png" />
                                         </ImageView>
                                     </graphic>
                                 </Button>
-                                <Button contentDisplay="TOP" text="New" wrapText="true">
+                                <Button contentDisplay="TOP" prefHeight="100.0" prefWidth="75.0" text="New" wrapText="true">
                                     <graphic>
                                         <ImageView>
                                             <Image url="@../icons/icons8_File_32px_1.png" />
                                         </ImageView>
                                     </graphic>
                                 </Button>
-                                <Button contentDisplay="TOP" text="Save" wrapText="true">
+                                <Button contentDisplay="TOP" prefHeight="100.0" prefWidth="75.0" text="Save" wrapText="true">
                                     <graphic>
                                         <ImageView>
                                             <Image url="@../icons/icons8_Save_32px.png" />
                                         </ImageView>
                                     </graphic>
                                 </Button>
-                                <!--<Button contentDisplay="TOP" text="Save as" wrapText="true" alignment="BOTTOM_LEFT">
-                                    <graphic>
-                                        <ImageView>
-                                            <Image url="@../icons/icons8_Save_as_32px.png" />
-                                        </ImageView>
-                                    </graphic>
-                                </Button>-->
                             </nodes>
                         </RibbonGroup>
-                        <RibbonGroup prefHeight="138.0" prefWidth="339.0" title="Preferences">
+
+                        <RibbonGroup title="Histogram">
+                            <nodes>
+                                <ImageView>
+                                    <Image url="@../icons/BarChart_64px.png" />
+                                </ImageView>
+                                <Column>
+                                    <RibbonItem>
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@../icons/Select_32px.png" />
+                                            </ImageView>
+                                        </graphic>
+                                        <item>
+                                            <Button contentDisplay="TOP" disable="true" onAction="#plotSelectedHistograms" text="Plot Selection" wrapText="true">
+                                            </Button>
+                                        </item>
+                                    </RibbonItem>
+
+                                    <RibbonItem>
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@../icons/CheckAll_32px.png" />
+                                            </ImageView>
+                                        </graphic>
+                                        <item>
+                                            <Button contentDisplay="TOP" onAction="#plotAllHistograms" text="Plot All Attributes" wrapText="true">
+                                            </Button>
+                                        </item>
+                                    </RibbonItem>
+                                </Column>
+
+                            </nodes>
+                        </RibbonGroup>
+
+                        <RibbonGroup title="Box Plot">
+                            <nodes>
+                                <ImageView>
+                                    <Image url="@../icons/Statistics_64px.png" />
+                                </ImageView>
+                                <Column>
+                                    <RibbonItem>
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@../icons/Select_32px.png" />
+                                            </ImageView>
+                                        </graphic>
+                                        <item>
+                                            <Button contentDisplay="TOP" disable="true" onAction="#plotSelectedBoxPlots" text="Plot Selection" wrapText="true">
+                                            </Button>
+                                        </item>
+                                    </RibbonItem>
+
+                                    <RibbonItem>
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@../icons/CheckAll_32px.png" />
+                                            </ImageView>
+                                        </graphic>
+                                        <item>
+                                            <Button contentDisplay="TOP" onAction="#plotAllHistograms" text="Plot All Attributes" wrapText="true">
+                                            </Button>
+                                        </item>
+                                    </RibbonItem>
+                                </Column>
+
+                            </nodes>
+                        </RibbonGroup>
+
+                        <RibbonGroup title="Configuration">
                             <nodes>
                                 <Column>
-                                    <RibbonItem label="Theme:">
+                                    <ToggleButton fx:id="newWindow" minWidth="-Infinity" styleClass="normal" text="new window">
                                         <graphic>
                                             <ImageView>
-                                                <Image url="@../icons/icons8_Change_Theme_16px.png" />
+                                                <Image url="@../icons/Windows_32px.png" />
                                             </ImageView>
                                         </graphic>
-                                        <item>
-                                            <ComboBox>
-                                                <items>
-                                                    <FXCollections fx:factory="observableArrayList">
-                                                        <String fx:value="Office Silver 2007" />
-                                                        <String fx:value="Office Blue 2007" />
-                                                        <String fx:value="Nebula Brick Wall" />
-                                                        <String fx:value="Business Blue Steel" />
-                                                    </FXCollections>
-                                                </items>
-                                            </ComboBox>
-                                        </item>
-                                    </RibbonItem>
-
-                                    <RibbonItem label="Language:">
+                                    </ToggleButton>
+                                    <ToggleButton minWidth="-Infinity" styleClass="normal" text="save to disk">
                                         <graphic>
                                             <ImageView>
-                                                <Image url="@../icons/icons8_Location_16px.png" />
-                                            </ImageView>
-                                        </graphic>
-                                        <item>
-                                            <ComboBox>
-                                                <items>
-                                                    <FXCollections fx:factory="observableArrayList">
-                                                        <String fx:value="English (UK)" />
-                                                        <String fx:value="Portugues (PT)" />
-                                                        <String fx:value="Portugues (BR)" />
-                                                        <String fx:value="English (USA)" />
-                                                    </FXCollections>
-                                                </items>
-                                            </ComboBox>
-                                        </item>
-                                    </RibbonItem>
-                                </Column>
-                                <Column>
-                                    <RibbonItem label="Angles:">
-                                        <item>
-                                            <ComboBox>
-                                                <items>
-                                                    <FXCollections fx:factory="observableArrayList">
-                                                        <String fx:value="Radians" />
-                                                        <String fx:value="Degrees" />
-                                                    </FXCollections>
-                                                </items>
-                                            </ComboBox>
-                                        </item>
-                                    </RibbonItem>
-                                    <RibbonItem label="Decimal Places:">
-                                        <item>
-                                            <TextField prefWidth="60" text="2"> </TextField>
-                                        </item>
-
-                                    </RibbonItem>
-                                    <RibbonItem label="Exponential Threshold:">
-                                        <item>
-                                            <TextField prefWidth="60" text="3"> </TextField>
-                                        </item>
-                                    </RibbonItem>
-                                </Column>
-
-                                <Column>
-                                    <ToggleButton minWidth="-Infinity" styleClass="normal" text="locked">
-                                        <graphic>
-                                            <ImageView>
-                                                <Image url="@../icons/icons8_Lock_16px.png" />
+                                                <Image url="@../icons/Save_32px.png" />
                                             </ImageView>
                                         </graphic>
                                     </ToggleButton>
@@ -190,21 +195,21 @@
                         </RibbonGroup>
                         <RibbonGroup prefHeight="138.0" prefWidth="214.0" title="Help">
                             <nodes>
-                                <Button contentDisplay="TOP" text="WebW" wrapText="true">
+                                <Button contentDisplay="TOP" prefHeight="100.0" prefWidth="75.0" text="WebW" wrapText="true">
                                     <graphic>
                                         <ImageView>
                                             <Image url="@../icons/icons8_Globe_32px.png" />
                                         </ImageView>
                                     </graphic>
                                 </Button>
-                                <Button contentDisplay="TOP" maxWidth="142.0" prefHeight="100.0" prefWidth="142.0" text="About" wrapText="true">
+                                <Button contentDisplay="TOP" maxWidth="142.0" prefHeight="100.0" prefWidth="75.0" text="About" wrapText="true">
                                     <graphic>
                                         <ImageView>
                                             <Image url="@../icons/icons8_Info_32px.png" />
                                         </ImageView>
                                     </graphic>
                                 </Button>
-                                <Button contentDisplay="TOP" prefWidth="70.0" text="HelpW" wrapText="true">
+                                <Button contentDisplay="TOP" prefHeight="100.0" prefWidth="75.0" text="Help" wrapText="true">
                                     <graphic>
                                         <ImageView>
                                             <Image url="@../icons/icons8_Help_32px.png" />
@@ -233,4 +238,71 @@
         </Ribbon>
 
     </top>
+    <center>
+        <SplitPane dividerPositions="0.65" styleClass="background">
+            <items>
+                <VBox>
+                    <children>
+                        <Label text="Instances">
+                            <graphic>
+                                <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../icons/Folder_32px.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <VBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </VBox.margin>
+                            <font>
+                                <Font size="20.0" />
+                            </font>
+                        </Label>
+                        <TableView fx:id="instancesTable">
+                            <VBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </VBox.margin>
+                        </TableView>
+                    </children>
+                </VBox>
+                <VBox>
+                    <children>
+                        <Label text="Attributes: ">
+                            <VBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </VBox.margin>
+                            <graphic>
+                                <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../icons/Graph_32px.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <font>
+                                <Font size="20.0" />
+                            </font>
+                        </Label>
+                        <TableView fx:id="attributes">
+                            <columns>
+                                <TableColumn fx:id="name" prefWidth="89.0" text="name" />
+                                <TableColumn fx:id="type" minWidth="3.0" prefWidth="61.0" text="type" />
+                        <TableColumn fx:id="min" minWidth="3.0" prefWidth="61.0" text="min" />
+                        <TableColumn fx:id="max" minWidth="3.0" prefWidth="61.0" text="max" />
+                        <TableColumn fx:id="mean" minWidth="3.0" prefWidth="61.0" text="mean" />
+                        <TableColumn fx:id="Q1" minWidth="3.0" prefWidth="61.0" text="Q1" />
+                        <TableColumn fx:id="Q3" minWidth="3.0" prefWidth="61.0" text="Q3" />
+                            </columns>
+                            <VBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </VBox.margin>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
+                        </TableView>
+                    </children>
+                </VBox>
+            </items>
+        </SplitPane>
+
+    </center>
 </BorderPane>
