@@ -29,6 +29,7 @@ dependencies {
     compile "org.openjfx:javafx-graphics:11:$platform"
     compile "org.openjfx:javafx-controls:11:$platform"
     compile "org.openjfx:javafx-fxml:11:$platform"
+    compile group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
 }
 
 compileJava {

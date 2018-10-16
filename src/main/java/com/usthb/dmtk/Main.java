@@ -1,7 +1,6 @@
 package com.usthb.dmtk;
 
-import com.usthb.dmtk.controllers.Home;
-import com.usthb.dmtk.controllers.InstanceController;
+import com.usthb.dmtk.controllers.HomeContorller;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -18,15 +17,12 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader homeLoader = new FXMLLoader(getClass().getResource("/views/home.fxml"));
-        Home home = new Home();
-        homeLoader.setController(home);
+        HomeContorller homeContorller = new HomeContorller();
+        homeLoader.setController(homeContorller);
         BorderPane mainPane = homeLoader.load();
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/table.fxml"));
-        Parent instances = loader.load();
-        InstanceController instanceController = loader.getController();
-        instanceController.setHome(home);
-        mainPane.setLeft(instances);
+        //new JMetro(JMetro.Style.LIGHT).applyTheme(mainPane);
+        //new JMetro(JMetro.Style.LIGHT).applyTheme(instances);
 
         primaryStage.setMaximized(true);
         primaryStage.setTitle("Data Mining Tool");
