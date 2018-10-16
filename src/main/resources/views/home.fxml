@@ -239,7 +239,7 @@
 
     </top>
     <center>
-        <SplitPane dividerPositions="0.65" styleClass="background">
+        <SplitPane dividerPositions="0.5" styleClass="background">
             <items>
                 <VBox>
                     <children>
@@ -291,6 +291,7 @@
                         <TableColumn fx:id="mean" minWidth="3.0" prefWidth="61.0" text="mean" />
                         <TableColumn fx:id="Q1" minWidth="3.0" prefWidth="61.0" text="Q1" />
                         <TableColumn fx:id="Q3" minWidth="3.0" prefWidth="61.0" text="Q3" />
+                        <TableColumn fx:id="mode" minWidth="3.0" prefWidth="61.0" text="mode" />
                             </columns>
                             <VBox.margin>
                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
