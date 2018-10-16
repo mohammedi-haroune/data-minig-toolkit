@@ -1,8 +1,8 @@
 package com.usthb.dmtk.controllers;
 
-import javafx.beans.property.*;
-import javafx.beans.value.ObservableStringValue;
-import javafx.collections.transformation.SortedList;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -11,30 +11,24 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.w3c.dom.Attr;
+import org.apache.commons.math3.stat.Frequency;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 public class HomeContorller {
     public StringProperty path = new SimpleStringProperty(null);
     public SimpleObjectProperty<Instances> instancesProperty = new SimpleObjectProperty<Instances>(null);
-
-    public Instances getInstances() {
-        return instancesProperty.get();
-    }
-
+    public HashMap<String, Frequency> frequencies = new HashMap<>();
+    public HashMap<String, DescriptiveStatistics> statistics = new HashMap<>();
     @FXML
     ToggleButton newWindow;
     @FXML
@@ -44,9 +38,13 @@ public class HomeContorller {
     @FXML
     TableColumn<Attribute, String> name, type;
     @FXML
-    TableColumn<Attribute, String> min, max, Q1, mean, Q3;
+    TableColumn<Attribute, String> min, max, Q1, mean, Q3, mode;
     @FXML
     Label relationName, numAttributes, numInstances;
+
+    public Instances getInstances() {
+        return instancesProperty.get();
+    }
 
     @FXML
     public void plotAllBoxPlots() {
@@ -64,7 +62,9 @@ public class HomeContorller {
     }
 
     @FXML
-    public void plotSelectedBoxPlots() { plot(); }
+    public void plotSelectedBoxPlots() {
+        plot();
+    }
 
     @FXML
     public void open() {
@@ -111,22 +111,24 @@ public class HomeContorller {
         min.setCellValueFactory(param -> {
             Attribute attribute = param.getValue();
             String m = "?";
-            if (attribute.type() == Attribute.NUMERIC) m = "" + getInstances().attributeStats(attribute.index()).numericStats.min;
+            if (attribute.type() == Attribute.NUMERIC)
+                m = "" + getInstances().attributeStats(attribute.index()).numericStats.min;
             return new SimpleStringProperty(m);
         });
 
         max.setCellValueFactory(param -> {
             Attribute attribute = param.getValue();
             String m = "?";
-            if (attribute.type() == Attribute.NUMERIC) m = "" + getInstances().attributeStats(attribute.index()).numericStats.max;
+            if (attribute.type() == Attribute.NUMERIC)
+                m = "" + getInstances().attributeStats(attribute.index()).numericStats.max;
             return new SimpleStringProperty(m);
         });
-
 
         mean.setCellValueFactory(param -> {
             Attribute attribute = param.getValue();
             String m = "?";
-            if (attribute.type() == Attribute.NUMERIC) m = "" + getInstances().attributeStats(attribute.index()).numericStats.mean;
+            if (attribute.type() == Attribute.NUMERIC)
+                m = "" + getInstances().attributeStats(attribute.index()).numericStats.mean;
             return new SimpleStringProperty(m);
         });
 
@@ -165,6 +167,11 @@ public class HomeContorller {
             }
             return new SimpleStringProperty(m);
         });
+
+        mode.setCellValueFactory(param -> {
+            Attribute attribute = param.getValue();
+            return new SimpleStringProperty(frequencies.get(attribute.name()).getMode().get(0).toString());
+        });
         instancesTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         attributes.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
@@ -196,8 +203,14 @@ public class HomeContorller {
 
             instancesTable.getColumns().add(column);
 
+            Frequency frequency = new Frequency();
+            DescriptiveStatistics stats = new DescriptiveStatistics();
+
+            frequencies.put(attribute.name(), frequency);
+            statistics.put(attribute.name(), stats);
+
             column.setCellValueFactory(param -> {
-                        Object value = null;
+                        Comparable value;
                         Instance ist = param.getValue();
                         switch (attribute.type()) {
                             case Attribute.DATE:
@@ -208,6 +221,7 @@ public class HomeContorller {
                                 break;
                             case Attribute.NUMERIC:
                                 value = ist.value(attribute);
+                                stats.addValue(ist.value(attribute));
                                 break;
                             case Attribute.NOMINAL:
                                 value = ist.stringValue(attribute);
@@ -215,6 +229,7 @@ public class HomeContorller {
                             default:
                                 throw new IllegalArgumentException("can't get value for attribute " + attribute.name() + " missing type " + attribute.type());
                         }
+                        frequency.addValue(value);
                         return new SimpleObjectProperty<>(value);
                     }
             );
@@ -222,7 +237,8 @@ public class HomeContorller {
         }
 
         while (i.hasMoreElements()) {
-            this.instancesTable.getItems().add(i.nextElement());
+            Instance ist = i.nextElement();
+            this.instancesTable.getItems().add(ist);
         }
     }
 
