@@ -17,18 +17,25 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Normalize;
+import weka.filters.unsupervised.attribute.Standardize;
 
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.*;
 
 public class HomeContorller {
     public StringProperty path = new SimpleStringProperty(null);
     public SimpleObjectProperty<Instances> instancesProperty = new SimpleObjectProperty<Instances>(null);
-    public HashMap<String, Frequency> frequencies = new HashMap<>();
-    public HashMap<String, DescriptiveStatistics> statistics = new HashMap<>();
+    public HashMap<Attribute, Frequency> frequencies = new HashMap<>();
+    public HashMap<Attribute, DescriptiveStatistics> statistics = new HashMap<>();
+
+    DecimalFormat df = new DecimalFormat("0.00");
+
     @FXML
     ToggleButton newWindow;
     @FXML
@@ -38,12 +45,33 @@ public class HomeContorller {
     @FXML
     TableColumn<Attribute, String> name, type;
     @FXML
-    TableColumn<Attribute, String> min, max, Q1, mean, Q3, mode;
+    TableColumn<Attribute, String> min, max, Q1, mean, Q3, mode, median, variance;
     @FXML
     Label relationName, numAttributes, numInstances;
 
     public Instances getInstances() {
         return instancesProperty.get();
+    }
+
+    @FXML
+    public void normalize() throws Exception {
+        Normalize normalize = new Normalize();
+        normalize.setInputFormat(getInstances());
+        Instances normalized = Filter.useFilter(getInstances(), normalize);
+        instancesTable.getItems().setAll(normalized);
+    }
+
+    @FXML
+    public void standardise() throws Exception {
+        Standardize standardize = new Standardize();
+        standardize.setInputFormat(getInstances());
+        Instances standarized = Filter.useFilter(getInstances(), standardize);
+        instancesTable.getItems().setAll(standarized);
+    }
+
+    @FXML
+    public void resetDataset() {
+        instancesTable.getItems().setAll(getInstances());
     }
 
     @FXML
@@ -108,11 +136,13 @@ public class HomeContorller {
             }
             return new SimpleStringProperty(type);
         });
+
+
         min.setCellValueFactory(param -> {
             Attribute attribute = param.getValue();
             String m = "?";
             if (attribute.type() == Attribute.NUMERIC)
-                m = "" + getInstances().attributeStats(attribute.index()).numericStats.min;
+                m = "" + df.format(statistics.get(attribute).getMin());
             return new SimpleStringProperty(m);
         });
 
@@ -120,7 +150,7 @@ public class HomeContorller {
             Attribute attribute = param.getValue();
             String m = "?";
             if (attribute.type() == Attribute.NUMERIC)
-                m = "" + getInstances().attributeStats(attribute.index()).numericStats.max;
+                m = "" + df.format(statistics.get(attribute).getMax());
             return new SimpleStringProperty(m);
         });
 
@@ -128,26 +158,15 @@ public class HomeContorller {
             Attribute attribute = param.getValue();
             String m = "?";
             if (attribute.type() == Attribute.NUMERIC)
-                m = "" + getInstances().attributeStats(attribute.index()).numericStats.mean;
+                m = "" + df.format(statistics.get(attribute).getMean());
             return new SimpleStringProperty(m);
         });
 
         Q1.setCellValueFactory(param -> {
             Attribute attribute = param.getValue();
             String m = "?";
-            if (attribute.type() == Attribute.NUMERIC) {
-                List<Double> columnData = new ArrayList<>();
-
-                for (Instance item : instancesTable.getItems()) {
-                    columnData.add(item.value(attribute));
-                }
-
-                Collections.sort(columnData);
-
-                int q1 = (int) Math.round(columnData.size() * 0.25);
-
-                m = columnData.get(q1) + "";
-            }
+            if (attribute.type() == Attribute.NUMERIC)
+                m = "" + df.format(statistics.get(attribute).getPercentile(25));
             return new SimpleStringProperty(m);
         });
 
@@ -155,23 +174,34 @@ public class HomeContorller {
         Q3.setCellValueFactory(param -> {
             Attribute attribute = param.getValue();
             String m = "?";
-            if (attribute.type() == Attribute.NUMERIC) {
-                List<Double> columnData = new ArrayList<>();
-
-                for (Instance item : instancesTable.getItems()) {
-                    columnData.add(item.value(attribute));
-                }
-                Collections.sort(columnData);
-                int q1 = (int) Math.round(columnData.size() * 0.75);
-                m = columnData.get(q1) + "";
-            }
+            if (attribute.type() == Attribute.NUMERIC)
+                m = "" + df.format(statistics.get(attribute).getPercentile(75));
             return new SimpleStringProperty(m);
         });
 
         mode.setCellValueFactory(param -> {
             Attribute attribute = param.getValue();
-            return new SimpleStringProperty(frequencies.get(attribute.name()).getMode().get(0).toString());
+            return new SimpleStringProperty(frequencies.get(attribute).getMode().get(0).toString());
         });
+
+        median.setCellValueFactory(param -> {
+            Attribute attribute = param.getValue();
+            String m = "?";
+            if (attribute.type() == Attribute.NUMERIC)
+                m = "" + df.format(statistics.get(attribute).getPercentile(50));
+            return new SimpleStringProperty(m);
+        });
+
+
+        variance.setCellValueFactory(param -> {
+            Attribute attribute = param.getValue();
+            String m = "?";
+            if (attribute.type() == Attribute.NUMERIC)
+                m = "" + df.format(statistics.get(attribute).getVariance());
+            return new SimpleStringProperty(m);
+        });
+
+
         instancesTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         attributes.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
@@ -181,6 +211,8 @@ public class HomeContorller {
         instancesTable.getColumns().clear();
         instancesTable.getItems().clear();
         attributes.getItems().clear();
+        frequencies.clear();
+        statistics.clear();
 
         InputStream inputStream = Files.newInputStream(Paths.get(path.getValue()));
         ConverterUtils.DataSource dataSource = new ConverterUtils.DataSource(inputStream);
@@ -189,9 +221,10 @@ public class HomeContorller {
         Enumeration<Attribute> attributeEnumeration = getInstances().enumerateAttributes();
         Enumeration<Instance> i = getInstances().enumerateInstances();
 
-        //relationName.setText("relation name: " + instancesTable.relationName());
-        //numAttributes.setText("#attributes: " + instancesTable.numAttributes());
-        //fnumInstances.setText("#instancesTable: " + instancesTable.numInstances());
+        //relationName.setText(getInstances().relationName() + "");
+
+        numAttributes.setText("(" + getInstances().numAttributes() + ")");
+        numInstances.setText("(" + getInstances().numInstances() + ")");
 
 
         while (attributeEnumeration.hasMoreElements()) {
@@ -206,8 +239,8 @@ public class HomeContorller {
             Frequency frequency = new Frequency();
             DescriptiveStatistics stats = new DescriptiveStatistics();
 
-            frequencies.put(attribute.name(), frequency);
-            statistics.put(attribute.name(), stats);
+            frequencies.put(attribute, frequency);
+            statistics.put(attribute, stats);
 
             column.setCellValueFactory(param -> {
                         Comparable value;
@@ -221,7 +254,6 @@ public class HomeContorller {
                                 break;
                             case Attribute.NUMERIC:
                                 value = ist.value(attribute);
-                                stats.addValue(ist.value(attribute));
                                 break;
                             case Attribute.NOMINAL:
                                 value = ist.stringValue(attribute);
@@ -229,17 +261,40 @@ public class HomeContorller {
                             default:
                                 throw new IllegalArgumentException("can't get value for attribute " + attribute.name() + " missing type " + attribute.type());
                         }
-                        frequency.addValue(value);
                         return new SimpleObjectProperty<>(value);
                     }
             );
-            attributes.getItems().add(attribute);
         }
 
         while (i.hasMoreElements()) {
             Instance ist = i.nextElement();
             this.instancesTable.getItems().add(ist);
+            for (Attribute a : frequencies.keySet()) {
+                Comparable value;
+                DescriptiveStatistics stats = statistics.get(a);
+                Frequency frequency = frequencies.get(a);
+                switch (a.type()) {
+                    case Attribute.DATE:
+                        value = a.formatDate(ist.value(a));
+                        break;
+                    case Attribute.STRING:
+                        value = ist.stringValue(a);
+                        break;
+                    case Attribute.NUMERIC:
+                        value = ist.value(a);
+                        stats.addValue(ist.value(a));
+                        break;
+                    case Attribute.NOMINAL:
+                        value = ist.stringValue(a);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("can't get value for a " + a.name() + " missing type " + a.type());
+                }
+                frequency.addValue(value);
+            }
         }
+        for (Attribute a : frequencies.keySet())
+            attributes.getItems().add(a);
     }
 
 
