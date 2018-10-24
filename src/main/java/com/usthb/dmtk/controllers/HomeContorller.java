@@ -17,20 +17,32 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
+import weka.core.pmml.jaxbbindings.Output;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Normalize;
+import weka.filters.unsupervised.attribute.ReplaceMissingValues;
 import weka.filters.unsupervised.attribute.Standardize;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HomeContorller {
+    public StringProperty instancePath = new SimpleStringProperty(null);
     public StringProperty path = new SimpleStringProperty(null);
-    public SimpleObjectProperty<Instances> instancesProperty = new SimpleObjectProperty<Instances>(null);
+    public SimpleObjectProperty<Instances> instancesProperty = new SimpleObjectProperty<>(null);
     public HashMap<Attribute, Frequency> frequencies = new HashMap<>();
     public HashMap<Attribute, DescriptiveStatistics> statistics = new HashMap<>();
 
@@ -49,75 +61,15 @@ public class HomeContorller {
     @FXML
     Label relationName, numAttributes, numInstances;
 
+    @FXML
+    Button plotSelectedBoxPlots, plotSelectedHistograms;
+
     public Instances getInstances() {
         return instancesProperty.get();
     }
 
     @FXML
-    public void normalize() throws Exception {
-        Normalize normalize = new Normalize();
-        normalize.setInputFormat(getInstances());
-        Instances normalized = Filter.useFilter(getInstances(), normalize);
-        instancesTable.getItems().setAll(normalized);
-    }
-
-    @FXML
-    public void standardise() throws Exception {
-        Standardize standardize = new Standardize();
-        standardize.setInputFormat(getInstances());
-        Instances standarized = Filter.useFilter(getInstances(), standardize);
-        instancesTable.getItems().setAll(standarized);
-    }
-
-    @FXML
-    public void resetDataset() {
-        instancesTable.getItems().setAll(getInstances());
-    }
-
-    @FXML
-    public void plotAllBoxPlots() {
-        plot();
-    }
-
-    @FXML
-    public void plotSelectedHistograms() {
-        plot();
-    }
-
-    @FXML
-    public void plotAllHistograms() {
-        plot();
-    }
-
-    @FXML
-    public void plotSelectedBoxPlots() {
-        plot();
-    }
-
-    @FXML
-    public void open() {
-        FileChooser chooser = new FileChooser();
-        chooser.setInitialDirectory(new File("data"));
-        FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Instances files", "*.arff");
-        chooser.getExtensionFilters().add(filter);
-        File file = chooser.showOpenDialog(instancesTable.getScene().getWindow());
-
-        if (file != null) {
-            path.setValue(file.getPath());
-        }
-    }
-
-    @FXML
     public void initialize() {
-
-        path.addListener((observable, oldValue, newValue) -> {
-            try {
-                loadInstance();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-
         name.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().name()));
         type.setCellValueFactory(param -> {
             String type = "missing";
@@ -201,22 +153,82 @@ public class HomeContorller {
             return new SimpleStringProperty(m);
         });
 
+        attributes.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.println(newValue);
+            if (newValue == null) {
+                plotSelectedBoxPlots.setDisable(true);
+                plotSelectedHistograms.setDisable(true);
+            } else {
+                plotSelectedHistograms.setDisable(false);
+                plotSelectedBoxPlots.setDisable(false);
+            }
+        });
 
-        instancesTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        attributes.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        path.addListener((observable, oldValue, newValue) -> {
+            try {
+                InputStream inputStream = Files.newInputStream(Paths.get(path.getValue()));
+                ConverterUtils.DataSource dataSource = new ConverterUtils.DataSource(inputStream);
+                instancesProperty.set(dataSource.getDataSet());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+
+        instancesProperty.addListener((observable, oldValue, newValue) -> {
+            try {
+                loadInstance();
+
+                Runnable thread = () -> {
+                    //generate statistics
+                    String script =  getClass().getResource("/scripts/statistics.py").getFile();
+                    String cmd[] = {"python3", script, path.get()};
+                    System.out.println("cmd =  " + Arrays.toString(cmd));
+
+                    Process process = null;
+                    try {
+                        process = Runtime.getRuntime().exec(cmd);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Scanner err = new Scanner(process.getErrorStream());
+                    while (err.hasNext()) {
+                        System.out.println("ERROR: " + err.nextLine());
+                    }
+
+                    Scanner out = new Scanner(process.getInputStream());
+                    while (out.hasNext()) {
+                        System.out.println("DEBUG: " + out.nextLine());
+                    }
+
+                    try {
+                        process.waitFor();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    process.destroy();
+                };
+
+
+                ExecutorService executorService
+                        = Executors.newFixedThreadPool(1);
+                executorService.execute(thread);
+                executorService.shutdown();
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
-    @FXML
-    public void loadInstance() throws Exception {
+    public void loadInstance() {
         instancesTable.getColumns().clear();
         instancesTable.getItems().clear();
         attributes.getItems().clear();
         frequencies.clear();
         statistics.clear();
-
-        InputStream inputStream = Files.newInputStream(Paths.get(path.getValue()));
-        ConverterUtils.DataSource dataSource = new ConverterUtils.DataSource(inputStream);
-        instancesProperty.set(dataSource.getDataSet());
 
         Enumeration<Attribute> attributeEnumeration = getInstances().enumerateAttributes();
         Enumeration<Instance> i = getInstances().enumerateInstances();
@@ -282,7 +294,6 @@ public class HomeContorller {
                         break;
                     case Attribute.NUMERIC:
                         value = ist.value(a);
-                        stats.addValue(ist.value(a));
                         break;
                     case Attribute.NOMINAL:
                         value = ist.stringValue(a);
@@ -290,24 +301,120 @@ public class HomeContorller {
                     default:
                         throw new IllegalArgumentException("can't get value for a " + a.name() + " missing type " + a.type());
                 }
-                frequency.addValue(value);
+                if (!ist.isMissing(a)) {
+                    stats.addValue(ist.value(a));
+                    frequency.addValue(value);
+                }
             }
         }
-        for (Attribute a : frequencies.keySet())
+        for (Attribute a : frequencies.keySet()) {
             attributes.getItems().add(a);
+        }
     }
 
 
-    public void plot() {
+
+
+    public void plot(String plotPath) {
+        System.out.println("plotting: " + plotPath);
+
         Stage stage = new Stage();
-        stage.setTitle("My New Stage Title");
+        stage.setTitle(plotPath);
         Image back = new
                 Image(
-                "file:data/boxplots/iris.arff/all.png", 800, 800, true, true);
-        //,
-        //                300, 200, false, false
+                "file:" + plotPath, 800, 800, true, true);
         AnchorPane root = new AnchorPane(new ImageView(back));
         stage.setScene(new Scene(root, 800, 600));
         stage.show();
+    }
+
+    @FXML
+    public void normalize() throws Exception {
+        Normalize normalize = new Normalize();
+        normalize.setInputFormat(getInstances());
+        Instances normalized = Filter.useFilter(getInstances(), normalize);
+        saveInstances(normalized, "normalized");
+        //instancesProperty.set(normalized);
+        //instancesTable.getItems().setAll(normalized);
+    }
+
+    @FXML
+    public void standardise() throws Exception {
+        Standardize standardize = new Standardize();
+        standardize.setInputFormat(getInstances());
+        Instances standarized = Filter.useFilter(getInstances(), standardize);
+        saveInstances(standarized, "standarized");
+        //instancesProperty.set(standarized);
+        //instancesTable.getItems().setAll(standarized);
+    }
+
+    @FXML
+    public void replaceMissingValues() throws Exception {
+        ReplaceMissingValues replaceMissingValues = new ReplaceMissingValues();
+        replaceMissingValues.setInputFormat(getInstances());
+        Instances missingValuesReplaced = Filter.useFilter(getInstances(), replaceMissingValues);
+        saveInstances(missingValuesReplaced, "missing");
+        //instancesProperty.set(missingValuesReplaced);
+        //instancesTable.getItems().setAll(missingValuesReplaced);
+    }
+
+    @FXML
+    public void resetDataset() throws Exception {
+        path.setValue(instancePath.getValue());
+        /*
+        InputStream inputStream = Files.newInputStream(Paths.get(path.getValue()));
+        ConverterUtils.DataSource dataSource = new ConverterUtils.DataSource(inputStream);
+        instancesProperty.set(dataSource.getDataSet());
+        */
+    }
+
+    @FXML
+    public void plotSelectedBoxPlots() {
+        String filename = Paths.get(path.get()).getFileName().toString();
+        String attribute = attributes.getSelectionModel().getSelectedItem().name();
+        plot("data/boxplots/" + filename + "/" + attribute + ".png");
+    }
+
+
+    @FXML
+    public void plotAllBoxPlots() {
+        String filename = Paths.get(path.get()).getFileName().toString();
+        plot("data/boxplots/" + filename + "/" + "all" + ".png");
+    }
+
+    @FXML
+    public void plotSelectedHistograms() {
+        String filename = Paths.get(path.get()).getFileName().toString();
+        String attribute = attributes.getSelectionModel().getSelectedItem().name();
+        plot("data/hists/" + filename + "/" + attribute + ".png");
+    }
+
+    @FXML
+    public void plotAllHistograms() {
+        String filename = Paths.get(path.get()).getFileName().toString();
+        String attribute = attributes.getSelectionModel().getSelectedItem().name();
+        plot("data/hists/" + filename + "/" + attribute + ".png");
+    }
+
+    @FXML
+    public void open() {
+        FileChooser chooser = new FileChooser();
+        chooser.setInitialDirectory(new File("data"));
+        FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Instances files", "*.arff");
+        chooser.getExtensionFilters().add(filter);
+        File file = chooser.showOpenDialog(instancesTable.getScene().getWindow());
+
+        if (file != null) {
+            path.setValue(file.getPath());
+            instancePath.setValue(file.getPath());
+        }
+    }
+
+    public void saveInstances(Instances instances, String suffix) throws Exception {
+        Path p = Paths.get(path.getValue() + suffix + ".arff");
+        OutputStream outputStream = Files.newOutputStream(p);
+        ConverterUtils.DataSink dataSink = new ConverterUtils.DataSink(outputStream);
+        dataSink.write(instances);
+        path.setValue(p.toString());
     }
 }
