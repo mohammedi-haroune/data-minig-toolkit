@@ -111,7 +111,8 @@
                                             </ImageView>
                                         </graphic>
                                         <item>
-                                            <Button contentDisplay="TOP" disable="true"
+                                            <Button fx:id="plotSelectedHistograms"
+                                                    contentDisplay="TOP" disable="true"
                                                     onAction="#plotSelectedHistograms" text="Plot Selection"
                                                     wrapText="true">
                                             </Button>
@@ -125,7 +126,7 @@
                                             </ImageView>
                                         </graphic>
                                         <item>
-                                            <Button contentDisplay="TOP" onAction="#plotAllHistograms"
+                                            <Button disable="true" contentDisplay="TOP" onAction="#plotAllHistograms"
                                                     text="Plot All Attributes" wrapText="true">
                                             </Button>
                                         </item>
@@ -148,7 +149,8 @@
                                             </ImageView>
                                         </graphic>
                                         <item>
-                                            <Button contentDisplay="TOP" disable="true" onAction="#plotSelectedBoxPlots"
+                                            <Button fx:id="plotSelectedBoxPlots"
+                                                    contentDisplay="TOP" disable="true" onAction="#plotSelectedBoxPlots"
                                                     text="Plot Selection" wrapText="true">
                                             </Button>
                                         </item>
@@ -161,7 +163,7 @@
                                             </ImageView>
                                         </graphic>
                                         <item>
-                                            <Button contentDisplay="TOP" onAction="#plotAllHistograms"
+                                            <Button contentDisplay="TOP" onAction="#plotAllBoxPlots"
                                                     text="Plot All Attributes" wrapText="true">
                                             </Button>
                                         </item>
@@ -212,13 +214,23 @@
                                             </ImageView>
                                         </graphic>
                                     </Button>
+
                                 </Column>
                                 <Column>
                                     <Button onAction="#resetDataset" minWidth="-Infinity" styleClass="normal"
                                             text="Reset Data">
                                         <graphic>
                                             <ImageView>
-                                                <Image url="@../icons/Reset_32px.png"/>
+                                                <Image requestedWidth="32" requestedHeight="32" url="@../icons/Reset_32px.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                    </Button>
+
+                                    <Button onAction="#replaceMissingValues" minWidth="-Infinity" styleClass="normal"
+                                            text="Replace Missing Values">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@../icons/Normalize_32px.png"/>
                                             </ImageView>
                                         </graphic>
                                     </Button>
