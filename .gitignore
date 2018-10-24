@@ -73,5 +73,10 @@ gradle-app.setting
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
 
+#plots
+
+data/hists
+data/boxplots
+
 
 # End of https://www.gitignore.io/api/java,gradle,intellij
