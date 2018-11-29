@@ -57,7 +57,7 @@
 
 @data
 %
-% 24 instances
+% 24 dataset
 %
 young,myope,no,reduced,none
 young,myope,no,normal,soft

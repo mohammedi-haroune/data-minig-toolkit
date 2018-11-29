@@ -27,11 +27,11 @@
 % 
 %        Results: Their ADAP algorithm makes a real-valued prediction between
 %        0 and 1.  This was transformed into a binary decision using a cutoff of 
-%        0.448.  Using 576 training instances, the sensitivity and specificity
-%        of their algorithm was 76% on the remaining 192 instances.
+%        0.448.  Using 576 training dataset, the sensitivity and specificity
+%        of their algorithm was 76% on the remaining 192 dataset.
 % 
 % 4. Relevant Information:
-%       Several constraints were placed on the selection of these instances from
+%       Several constraints were placed on the selection of these dataset from
 %       a larger database.  In particular, all patients here are females at
 %       least 21 years old of Pima Indian heritage.  ADAP is an adaptive learning
 %       routine that generates and executes digital analogs of perceptron-like
@@ -57,7 +57,7 @@
 % 9. Class Distribution: (class value 1 is interpreted as "tested positive for
 %    diabetes")
 % 
-%    Class Value  Number of instances
+%    Class Value  Number of dataset
 %    0            500
 %    1            268
 % 

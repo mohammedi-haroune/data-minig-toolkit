@@ -22,7 +22,7 @@ public class Main extends Application {
         BorderPane mainPane = homeLoader.load();
 
         //new JMetro(JMetro.Style.LIGHT).applyTheme(mainPane);
-        //new JMetro(JMetro.Style.LIGHT).applyTheme(instances);
+        //new JMetro(JMetro.Style.LIGHT).applyTheme(dataset);
 
         primaryStage.setMaximized(true);
         primaryStage.setTitle("Data Mining Tool");

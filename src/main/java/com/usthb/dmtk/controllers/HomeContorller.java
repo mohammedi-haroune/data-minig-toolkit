@@ -1,23 +1,28 @@
 package com.usthb.dmtk.controllers;
 
+import com.usthb.dmtk.algorithms.knn.KNN;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.math3.stat.Frequency;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.w3c.dom.html.HTMLButtonElement;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
-import weka.core.pmml.jaxbbindings.Output;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.unsupervised.attribute.ReplaceMissingValues;
@@ -31,11 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Scanner;
-import java.util.concurrent.Executor;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -63,6 +64,27 @@ public class HomeContorller {
 
     @FXML
     Button plotSelectedBoxPlots, plotSelectedHistograms;
+
+    @FXML
+    BorderPane borderPane;
+
+    @FXML
+    VBox first, second;
+
+    @FXML
+    Slider k, q, ratio;
+
+    @FXML
+    TextArea results;
+
+    @FXML
+    ComboBox<Attribute> target;
+    AprioriController aprioriController;
+    @FXML
+    private VBox resultsVBox;
+
+    @FXML
+    private Button runButton;
 
     public Instances getInstances() {
         return instancesProperty.get();
@@ -154,7 +176,6 @@ public class HomeContorller {
         });
 
         attributes.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println(newValue);
             if (newValue == null) {
                 plotSelectedBoxPlots.setDisable(true);
                 plotSelectedHistograms.setDisable(true);
@@ -178,11 +199,11 @@ public class HomeContorller {
 
         instancesProperty.addListener((observable, oldValue, newValue) -> {
             try {
-                loadInstance();
+                loadInstance(getInstances(), instancesTable);
 
                 Runnable thread = () -> {
                     //generate statistics
-                    String script =  getClass().getResource("/scripts/statistics.py").getFile();
+                    String script = getClass().getResource("/scripts/statistics.py").getFile();
                     String cmd[] = {"python3", script, path.get()};
                     System.out.println("cmd =  " + Arrays.toString(cmd));
 
@@ -221,61 +242,41 @@ public class HomeContorller {
                 e.printStackTrace();
             }
         });
+
+        target.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            getInstances().setClass(newValue);
+        });
     }
 
-    public void loadInstance() {
-        instancesTable.getColumns().clear();
-        instancesTable.getItems().clear();
+    public void loadInstance(Instances instances, TableView<Instance> table) {
+        table.getColumns().clear();
+        table.getItems().clear();
         attributes.getItems().clear();
         frequencies.clear();
         statistics.clear();
 
-        Enumeration<Attribute> attributeEnumeration = getInstances().enumerateAttributes();
-        Enumeration<Instance> i = getInstances().enumerateInstances();
+        Enumeration<Attribute> attributeEnumeration = instances.enumerateAttributes();
+        Enumeration<Instance> i = instances.enumerateInstances();
 
-        //relationName.setText(getInstances().relationName() + "");
+        //relationName.setText(instances.relationName() + "");
 
-        numAttributes.setText("(" + getInstances().numAttributes() + ")");
-        numInstances.setText("(" + getInstances().numInstances() + ")");
+        numAttributes.setText("(" + instances.numAttributes() + ")");
+        numInstances.setText("(" + instances.numInstances() + ")");
 
 
         while (attributeEnumeration.hasMoreElements()) {
             Attribute attribute = attributeEnumeration.nextElement();
+            System.out.println("attribute = " + attribute);
+            if (attribute.isNominal())
+                if (!target.getItems().contains(attribute))
+                    target.getItems().add(attribute);
 
-            System.out.println(attribute);
-
-            TableColumn<Instance, Object> column = new TableColumn<>(attribute.name());
-
-            instancesTable.getColumns().add(column);
-
-            Frequency frequency = new Frequency();
-            DescriptiveStatistics stats = new DescriptiveStatistics();
-
-            frequencies.put(attribute, frequency);
-            statistics.put(attribute, stats);
-
-            column.setCellValueFactory(param -> {
-                        Comparable value;
-                        Instance ist = param.getValue();
-                        switch (attribute.type()) {
-                            case Attribute.DATE:
-                                value = attribute.formatDate(ist.value(attribute));
-                                break;
-                            case Attribute.STRING:
-                                value = ist.stringValue(attribute);
-                                break;
-                            case Attribute.NUMERIC:
-                                value = ist.value(attribute);
-                                break;
-                            case Attribute.NOMINAL:
-                                value = ist.stringValue(attribute);
-                                break;
-                            default:
-                                throw new IllegalArgumentException("can't get value for attribute " + attribute.name() + " missing type " + attribute.type());
-                        }
-                        return new SimpleObjectProperty<>(value);
-                    }
-            );
+            TableColumn<Instance, Object> column = createColumnFor(attribute);
+            table.getColumns().add(column);
+        }
+        if (instances.classIndex() != -1) {
+            TableColumn<Instance, Object> column = createColumnFor(instances.classAttribute());
+            table.getColumns().add(column);
         }
 
         while (i.hasMoreElements()) {
@@ -312,8 +313,40 @@ public class HomeContorller {
         }
     }
 
+    private TableColumn<Instance, Object> createColumnFor(Attribute attribute) {
+        TableColumn<Instance, Object> column = new TableColumn<>(attribute.name());
 
 
+        Frequency frequency = new Frequency();
+        DescriptiveStatistics stats = new DescriptiveStatistics();
+
+        //frequencies.put(attribute, frequency);
+        //statistics.put(attribute, stats);
+
+        column.setCellValueFactory(param -> {
+                    Comparable value;
+                    Instance ist = param.getValue();
+                    switch (attribute.type()) {
+                        case Attribute.DATE:
+                            value = attribute.formatDate(ist.value(attribute));
+                            break;
+                        case Attribute.STRING:
+                            value = ist.stringValue(attribute);
+                            break;
+                        case Attribute.NUMERIC:
+                            value = ist.value(attribute);
+                            break;
+                        case Attribute.NOMINAL:
+                            value = ist.stringValue(attribute);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("can't get value for attribute " + attribute.name() + " missing type " + attribute.type());
+                    }
+                    return new SimpleObjectProperty<>(value);
+                }
+        );
+        return column;
+    }
 
     public void plot(String plotPath) {
         System.out.println("plotting: " + plotPath);
@@ -375,7 +408,6 @@ public class HomeContorller {
         plot("data/boxplots/" + filename + "/" + attribute + ".png");
     }
 
-
     @FXML
     public void plotAllBoxPlots() {
         String filename = Paths.get(path.get()).getFileName().toString();
@@ -416,5 +448,104 @@ public class HomeContorller {
         ConverterUtils.DataSink dataSink = new ConverterUtils.DataSink(outputStream);
         dataSink.write(instances);
         path.setValue(p.toString());
+    }
+
+    @FXML
+    public void hachwa() throws IOException {
+        FXMLLoader hachwaPane = new FXMLLoader(getClass().getResource("/views/apriori.fxml"));
+        AprioriController hachwaController = new AprioriController();
+        hachwaPane.setController(hachwaController);
+
+        aprioriController = hachwaController;
+
+        SplitPane mainPane = hachwaPane.load();
+        this.borderPane.setCenter(mainPane);
+    }
+
+    @FXML
+    public void loadApriori() throws IOException {
+        aprioriController.loadApriori();
+    }
+
+    @FXML
+    public void runApriori() {
+        aprioriController.runApripor();
+    }
+
+    Instances train, test;
+    TableView<Instance> trainTable = new TableView<>();
+    TableView<Instance> testTable = new TableView<>();
+
+    @FXML
+    public void runKnn() {
+        KNN knn = new KNN(getInstances(), train, test, (int) k.getValue(), ratio.getValue());
+
+        TreeMap<Integer, String> map = knn.classifyTestSet(knn.test);
+        String res = "";
+        res += "Le nombre de voisins K : " + k.getValue() + "\n";
+        res += "Le ratio de division de l'ensemble d'apprentissage est: " + ratio.getValue() + "\n";
+        res += "La précision (accuracy) lors de l'évaluation est     " + knn.accuracy + "%\n";
+
+        System.out.println(res);
+
+        TableColumn<Instance, String> column = new TableColumn<>("Prediction");
+
+        trainTable.getColumns().add(column);
+
+        column.setCellValueFactory(param -> {
+            Instance ist = param.getValue();
+            return new SimpleStringProperty(knn.classify(ist));
+        });
+
+        TableColumn<Instance, String> column2 = new TableColumn<>("Prediction");
+
+        testTable.getColumns().add(column2);
+
+        column2.setCellValueFactory(param -> {
+            Instance ist = param.getValue();
+            return new SimpleStringProperty(knn.classify(ist));
+        });
+    }
+
+    @FXML
+    public void showStats() {
+        first.getChildren().clear();
+        GridPane gridPane = new GridPane();
+        gridPane.setGridLinesVisible(true);
+        gridPane.setHgap(10.0);
+        gridPane.setVgap(10.0);
+        gridPane.addRow(0, new Label("Predicted\\Correct"), new Label("Positive"), new Label ("Negative"));
+        gridPane.addRow(1, new Label("Positive"), new Label("TP = 100"), new Label ("FN = 45"));
+        gridPane.addRow(2, new Label("Negative"), new Label("FP = 14"), new Label ("TN = 100"));
+        first.getChildren().add(gridPane);
+    }
+
+    @FXML
+    public void split() {
+        Instances all = getInstances();
+
+        all.randomize(new java.util.Random(0));
+        int trainSize = (int) Math.round(all.numInstances() * ratio.getValue());
+
+        int testSize = all.numInstances() - trainSize;
+
+        train = new Instances(all, 0, trainSize);
+        test = new Instances(all, trainSize, testSize);
+
+        runButton.setDisable(false);
+
+        second.getChildren().clear();
+
+        Label trainLabel = new Label("Train Set");
+        loadInstance(train, trainTable);
+        VBox trainVBox = new VBox(trainLabel, trainTable);
+        trainTable.getItems().addAll(train);
+        second.getChildren().add(trainVBox);
+
+        Label testLabel = new Label("Test Set");
+        loadInstance(test, testTable);
+        testTable.getItems().addAll(test);
+        VBox testVBox = new VBox(testLabel, testTable);
+        second.getChildren().add(testVBox);
     }
 }

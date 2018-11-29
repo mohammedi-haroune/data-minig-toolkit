@@ -41,8 +41,8 @@
 %      that has repeatedly appeared in the machine learning literature.
 %      (See also lymphography and primary-tumor.)
 % 
-%      This data set includes 201 instances of one class and 85 instances of
-%      another class.  The instances are described by 9 attributes, some of
+%      This data set includes 201 dataset of one class and 85 dataset of
+%      another class.  The dataset are described by 9 attributes, some of
 %      which are linear and some are nominal.
 % 
 % 5. Number of Instances: 286
@@ -64,13 +64,13 @@
 %   10. irradiat: yes, no.
 % 
 % 8. Missing Attribute Values: (denoted by "?")
-%    Attribute #:  Number of instances with missing values:
+%    Attribute #:  Number of dataset with missing values:
 %    6.             8
 %    9.             1.
 % 
 % 9. Class Distribution:
-%     1. no-recurrence-events: 201 instances
-%     2. recurrence-events: 85 instances
+%     1. no-recurrence-events: 201 dataset
+%     2. recurrence-events: 85 dataset
 %
 % Num Instances:     286
 % Num Attributes:    10

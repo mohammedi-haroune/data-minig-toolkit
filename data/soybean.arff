@@ -22,7 +22,7 @@
 %        International Conference on Machine Learning (pp. 121-134). Ann Arbor,
 %         Michigan: Morgan Kaufmann.
 %         -- IWN recorded a 97.1% classification accuracy 
-%            -- 290 training and 340 test instances
+%            -- 290 training and 340 test dataset
 %      3. Fisher,D.H. & Schlimmer,J.C. (1988). Concept Simplification and
 %         Predictive Accuracy. Proceedings of the Fifth
 %         International Conference on Machine Learning (pp. 22-28). Ann Arbor,

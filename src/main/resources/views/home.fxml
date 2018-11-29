@@ -33,8 +33,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
-<BorderPane id="BorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+<?import javafx.scene.text.*?>
+<BorderPane fx:id="borderPane" id="BorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+            minWidth="-Infinity"
             prefHeight="514.0" prefWidth="1059.0" styleClass="background" xmlns="http://javafx.com/javafx/10.0.1"
             xmlns:fx="http://javafx.com/fxml/1">
     <top>
@@ -221,7 +222,8 @@
                                             text="Reset Data">
                                         <graphic>
                                             <ImageView>
-                                                <Image requestedWidth="32" requestedHeight="32" url="@../icons/Reset_32px.png"/>
+                                                <Image requestedWidth="32" requestedHeight="32"
+                                                       url="@../icons/Reset_32px.png"/>
                                             </ImageView>
                                         </graphic>
                                     </Button>
@@ -268,8 +270,165 @@
                         </RibbonGroup-->
                     </ribbonGroups>
                 </RibbonTab>
-                <RibbonTab text="INDEPENDENT VARIABLE">
+
+                <RibbonTab text="Apriori">
+                    <ribbonGroups>
+                        <RibbonGroup title="File">
+                            <nodes>
+                                <Button contentDisplay="TOP" prefHeight="100.0" prefWidth="75.0"
+                                        text="Start" onAction="#hachwa" wrapText="true">
+                                    <graphic>
+                                        <ImageView>
+                                            <Image url="@../icons/icons8_Open_32px_3.png"/>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                                <Button contentDisplay="TOP" onAction="#loadApriori" prefHeight="100.0" prefWidth="75.0"
+                                        text="Load"
+                                        wrapText="true">
+                                    <graphic>
+                                        <ImageView>
+                                            <Image url="@../icons/icons8_File_32px_1.png"/>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                                <Button contentDisplay="TOP" onAction="#runApriori" prefHeight="100.0" prefWidth="75.0"
+                                        text="Run"
+                                        wrapText="true">
+                                    <graphic>
+                                        <ImageView>
+                                            <Image url="@../icons/icons8_Save_32px.png"/>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                            </nodes>
+                        </RibbonGroup>
+                    </ribbonGroups>
                 </RibbonTab>
+
+                <RibbonTab text="KNN">
+                    <ribbonGroups>
+                        <RibbonGroup text="Configuration">
+                            <nodes>
+                                <Column>
+                                    <Column.margin>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                    </Column.margin>
+                                    <RibbonItem label="Min voisins:">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@../icons/Graph_16px.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                        <item>
+                                            <Slider fx:id="k"
+                                                    blockIncrement="1.0"
+                                                    cache="true"
+                                                    majorTickUnit="1.0"
+                                                    min="1.0"
+                                                    minorTickCount="0"
+                                                    snapToTicks="true"
+                                                    max="10"
+                                                    value="3"
+                                                    showTickLabels="true"
+                                                    showTickMarks="true"/>
+                                        </item>
+                                    </RibbonItem>
+                                    <RibbonItem label="Distance base:">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@../icons/Graph_16px.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                        <item>
+                                            <Slider fx:id="q"
+                                                    blockIncrement="1.0"
+                                                    cache="true"
+                                                    majorTickUnit="1.0"
+                                                    min="1.0"
+                                                    minorTickCount="0"
+                                                    snapToTicks="true"
+                                                    max="10"
+                                                    value="2"
+                                                    showTickLabels="true"
+                                                    showTickMarks="true"/>
+                                        </item>
+                                    </RibbonItem>
+
+                                </Column>
+                                <Column>
+                                    <RibbonItem label="Class :">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image requestedWidth="16" url="@../icons/Standardize_32px.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                        <item>
+                                            <ComboBox fx:id="target">
+                                            </ComboBox>
+                                        </item>
+                                    </RibbonItem>
+
+
+                                    <RibbonItem label="Train/Test:">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@../icons/Graph_16px.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                        <item>
+                                            <Slider fx:id="ratio"
+                                                    blockIncrement="0.05"
+                                                    cache="true"
+                                                    majorTickUnit="0.05"
+                                                    minorTickCount="0"
+                                                    snapToTicks="true"
+                                                    min="0.5"
+                                                    max="1.0"
+                                                    value="0.75"
+                                                    showTickLabels="true"
+                                                    showTickMarks="true"/>
+                                        </item>
+                                    </RibbonItem>
+                                </Column>
+                            </nodes>
+                        </RibbonGroup>
+                        <RibbonGroup title="Enjoying !">
+                            <nodes>
+                                <Button contentDisplay="TOP" onAction="#split" prefHeight="100.0" prefWidth="75.0"
+                                        text="1. Split"
+                                        wrapText="true">
+                                    <graphic>
+                                        <ImageView>
+                                            <Image url="@../icons/icons8_Globe_32px.png"/>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                                <Button fx:id="runButton" disable="true" contentDisplay="TOP" onAction="#runKnn"
+                                        prefHeight="100.0" prefWidth="75.0"
+                                        text="2. Run"
+                                        wrapText="true">
+                                    <graphic>
+                                        <ImageView>
+                                            <Image url="@../icons/icons8_Save_32px.png"/>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                                <Button contentDisplay="TOP" onAction="#showStats" prefHeight="100.0"
+                                        prefWidth="75.0"
+                                        text="3. Stats"
+                                        wrapText="true">
+                                    <graphic>
+                                        <ImageView>
+                                            <Image url="@../icons/icons8_Underline_32px.png"/>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                            </nodes>
+                        </RibbonGroup>
+                    </ribbonGroups>
+                </RibbonTab>
+
                 <RibbonTab text="MODEL">
                 </RibbonTab>
                 <RibbonTab text="CHART">
@@ -289,7 +448,7 @@
     <center>
         <SplitPane dividerPositions="0.5" styleClass="background">
             <items>
-                <VBox>
+                <VBox fx:id="first">
                     <children>
                         <HBox>
                             <VBox.margin>
@@ -327,7 +486,7 @@
                         </TableView>
                     </children>
                 </VBox>
-                <VBox>
+                <VBox fx:id="second">
                     <children>
                         <HBox>
                             <VBox.margin>
@@ -377,10 +536,39 @@
                                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                             </columnResizePolicy>
                         </TableView>
+                        <VBox fx:id="resultsVBox" visible="false">
+                            <children>
+                                <HBox>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                    </padding>
+                                    <VBox.margin>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                    </VBox.margin>
+                                    <children>
+                                        <Label text="Results">
+                                            <graphic>
+                                                <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true"
+                                                           preserveRatio="true">
+                                                    <image>
+                                                        <Image url="@../icons/Graph_32px.png"/>
+                                                    </image>
+                                                </ImageView>
+                                            </graphic>
+                                            <font>
+                                                <Font size="20.0"/>
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <TextArea fx:id="results">
+
+                                </TextArea>
+                            </children>
+                        </VBox>
                     </children>
                 </VBox>
             </items>
         </SplitPane>
-
     </center>
 </BorderPane>

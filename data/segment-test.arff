@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------------
 % This is a subset of the segmentation data (i.e. a subset of the combined 
 % original training and test datasets). The description below refers
-% to the original dataset. This subset has 810 instances. The distribution
+% to the original dataset. This subset has 810 dataset. The distribution
 % of classes is NOT stratified in this subset.
 % ----------------------------------------------------------------------------
 %
@@ -16,7 +16,7 @@
 % 
 % 4. Relevant Information:
 % 
-%    The instances were drawn randomly from a database of 7 outdoor 
+%    The dataset were drawn randomly from a database of 7 outdoor
 %    images.  The images were handsegmented to create a classification
 %    for every pixel.  
 % 
@@ -63,8 +63,8 @@
 % 
 %    Classes:  brickface, sky, foliage, cement, window, path, grass.
 % 
-%    30 instances per class for training data.
-%    300 instances per class for test data.
+%    30 dataset per class for training data.
+%    300 dataset per class for test data.
 % 
 %
 %
