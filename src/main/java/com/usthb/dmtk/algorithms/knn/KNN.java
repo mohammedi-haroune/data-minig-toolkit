@@ -12,11 +12,10 @@ public class KNN {
     public Instances train;
     public Instances test;
 
-    public double accuracy = 0;
+    public double testAccuracy = 0, trainAccuracy = 0;
     private static int q = 3;
-    int K = 3;
+    private int K;
     TreeMap<String,BitSet> valueToCode = new TreeMap<>();
-
 
     public KNN(Instances dataset, Instances train, Instances test, int K, double ratio)
     {
@@ -47,9 +46,13 @@ public class KNN {
     {
         BitSet tmp;
         if(a == null)
-            throw new IllegalArgumentException("a should not be null");
+        {
+            return 0;
+        }
         if( b == null)
-            throw new IllegalArgumentException("b should not be null");
+        {
+            return 0;
+        }
 
         tmp = (BitSet) a.clone();
         tmp.xor(b);
@@ -106,7 +109,9 @@ public class KNN {
             knns[cpt] = dataset.instance(k).stringValue(dataset.classIndex());
             cpt++;
         }
-        return getMostFrequentClass(knns);
+        String predicted = getMostFrequentClass(knns);
+
+        return predicted;
     }
 
 
@@ -121,7 +126,25 @@ public class KNN {
                 correctlyClassified++;
 
         }
-        this.accuracy = test.numInstances()>0?correctlyClassified*100/test.numInstances():0;
+        this.testAccuracy = test.numInstances()>0?correctlyClassified*100/test.numInstances():0;
+        return results;
+    }
+
+    public TreeMap<Integer,String> classifyTrainSet(Instances test)
+    {
+        TreeMap<Integer ,String> results = new TreeMap<>();
+        int correctlyClassified = 0;
+        for (int i = 0; i < test.numInstances(); i++) {
+            String predicted = classify(test.instance(i));
+            results.put(i,test.instance(i).stringValue(dataset.classIndex())+","+predicted);
+            if(test.instance(i).stringValue(dataset.classIndex()).toLowerCase().equals(predicted.toLowerCase()))
+            {
+                System.out.println("correctly classified " + test.instance(i).stringValue(dataset.classIndex()).toLowerCase() + " predicted: " + predicted.toLowerCase());
+                correctlyClassified++;
+            }
+
+        }
+        this.trainAccuracy = test.numInstances()>0?correctlyClassified*100/test.numInstances():0;
         return results;
     }
 

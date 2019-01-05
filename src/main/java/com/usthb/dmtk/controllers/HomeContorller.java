@@ -1,5 +1,8 @@
 package com.usthb.dmtk.controllers;
 
+import com.usthb.dmtk.algorithms.dbscan.Cluster;
+import com.usthb.dmtk.algorithms.dbscan.DBScan;
+import com.usthb.dmtk.algorithms.dbscan.Point;
 import com.usthb.dmtk.algorithms.knn.KNN;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -12,13 +15,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.math3.stat.Frequency;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.w3c.dom.html.HTMLButtonElement;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -85,6 +87,8 @@ public class HomeContorller {
 
     @FXML
     private Button runButton;
+    @FXML
+    private Slider minPtsSlider, epsilonSlider, q2;
 
     public Instances getInstances() {
         return instancesProperty.get();
@@ -92,6 +96,17 @@ public class HomeContorller {
 
     @FXML
     public void initialize() {
+
+        target.setCellFactory(attributeListView ->
+            new ListCell<Attribute> () {
+                @Override
+                protected void updateItem(Attribute item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty ? "" : item.name());
+                }
+            }
+        );
+
         name.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().name()));
         type.setCellValueFactory(param -> {
             String type = "missing";
@@ -476,15 +491,17 @@ public class HomeContorller {
     TableView<Instance> trainTable = new TableView<>();
     TableView<Instance> testTable = new TableView<>();
 
+    KNN knn;
     @FXML
     public void runKnn() {
-        KNN knn = new KNN(getInstances(), train, test, (int) k.getValue(), ratio.getValue());
+        knn = new KNN(getInstances(), train, test, (int) k.getValue(), ratio.getValue());
 
         TreeMap<Integer, String> map = knn.classifyTestSet(knn.test);
+        knn.classifyTrainSet(knn.train);
         String res = "";
         res += "Le nombre de voisins K : " + k.getValue() + "\n";
         res += "Le ratio de division de l'ensemble d'apprentissage est: " + ratio.getValue() + "\n";
-        res += "La précision (accuracy) lors de l'évaluation est     " + knn.accuracy + "%\n";
+        res += "La précision (testAccuracy) lors de l'évaluation est     " + knn.testAccuracy + "%\n";
 
         System.out.println(res);
 
@@ -509,15 +526,15 @@ public class HomeContorller {
 
     @FXML
     public void showStats() {
-        first.getChildren().clear();
-        GridPane gridPane = new GridPane();
-        gridPane.setGridLinesVisible(true);
-        gridPane.setHgap(10.0);
-        gridPane.setVgap(10.0);
-        gridPane.addRow(0, new Label("Predicted\\Correct"), new Label("Positive"), new Label ("Negative"));
-        gridPane.addRow(1, new Label("Positive"), new Label("TP = 100"), new Label ("FN = 45"));
-        gridPane.addRow(2, new Label("Negative"), new Label("FP = 14"), new Label ("TN = 100"));
-        first.getChildren().add(gridPane);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Statistics :");
+        alert.setHeaderText("Statistics :");
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        String text = "";
+        text = text + "La précision est de : " + knn.testAccuracy + " %" + " dans les données de test\n";
+        text = text + "La précision est de : " + knn.trainAccuracy + " %" + " dans les données d'apprentisssage\n";
+        alert.setContentText(text);
+        alert.showAndWait();
     }
 
     @FXML
@@ -547,5 +564,52 @@ public class HomeContorller {
         testTable.getItems().addAll(test);
         VBox testVBox = new VBox(testLabel, testTable);
         second.getChildren().add(testVBox);
+    }
+
+
+    DBScan dbscan;
+    @FXML
+    public void runDBScan() {
+        dbscan = new DBScan(epsilonSlider.getValue(), minPtsSlider.getValue(), getInstances());
+        dbscan.start();
+        ArrayList<Cluster> clusters = (ArrayList<Cluster>) dbscan.clusters();
+        String res = "Les résultats de l'algorithme DBSCAN :" + "\n";
+        res += "La distance minimale de densité Epsilon : " + epsilonSlider.getValue() + "\n";
+        res += "Le nombre de points  de clusterisation minimum est: " + minPtsSlider.getValue() + "\n";
+        res += "Le nombre de clusters est : " + clusters.size() +"\n";
+        res += "L'inertie intra-classes est : " + dbscan.intra() +"\n";
+        res += "L'inertie inter-classes est : " + dbscan.inter() +"\n";
+        res += "Les clusters construit sont : \n\n\n";
+        res += clustersToString(clusters) + "\n";
+
+        TextArea textArea = new TextArea();
+        textArea.setText(res);
+
+        textArea.prefWidthProperty().bind(second.widthProperty());
+        textArea.prefHeightProperty().bind(second.heightProperty());
+        second.getChildren().clear();
+        second.getChildren().add(textArea);
+
+    }
+
+
+    private String clustersToString(ArrayList<Cluster> res) {
+        String s = "";
+        int count = 1;
+        for (Cluster c : res) {
+            s += "----------------------------------\n";
+            s += "Cluster : " + count + "\n"  +
+                    "Nombre d'éléments : " + c.getObjects().size() + "\n" +
+                    "Distance moyenne dans le cluster: " + c.score() + "\n";
+            count++;
+        }
+     /*       +" \n[";
+            for (Point p : c.getObjects()) {
+                s+= "\t\t"+p+"\n";
+            }
+            s+="]\n";
+            count++;
+        }*/
+        return s;
     }
 }

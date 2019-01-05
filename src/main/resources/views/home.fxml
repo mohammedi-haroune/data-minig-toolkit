@@ -429,15 +429,113 @@
                     </ribbonGroups>
                 </RibbonTab>
 
+                <RibbonTab text="DBScan">
+                    <ribbonGroups>
+                        <RibbonGroup text="Configuration">
+                            <nodes>
+                                <Column minWidth="100">
+                                    <Column.margin>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                    </Column.margin>
+                                    <RibbonItem label="points min:">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@../icons/Graph_16px.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                        <item>
+                                            <Slider fx:id="minPtsSlider"
+                                                    minWidth="400"
+                                                    blockIncrement="1.0"
+                                                    cache="true"
+                                                    majorTickUnit="1.0"
+                                                    min="1.0"
+                                                    minorTickCount="0"
+                                                    snapToTicks="true"
+                                                    max="50"
+                                                    value="20"
+                                                    showTickLabels="true"
+                                                    showTickMarks="true"/>
+                                        </item>
+                                    </RibbonItem>
+                                    <RibbonItem label="Distance base:">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@../icons/Graph_16px.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                        <item>
+                                            <Slider fx:id="q2"
+                                                    minWidth="400"
+                                                    blockIncrement="1.0"
+                                                    cache="true"
+                                                    majorTickUnit="1.0"
+                                                    min="1.0"
+                                                    minorTickCount="0"
+                                                    snapToTicks="true"
+                                                    max="10"
+                                                    value="2"
+                                                    showTickLabels="true"
+                                                    showTickMarks="true"/>
+                                        </item>
+                                    </RibbonItem>
+
+                                    <RibbonItem label="Epsilon:">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@../icons/Graph_16px.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                        <item>
+                                            <Slider fx:id="epsilonSlider"
+                                                    minWidth="400"
+                                                    blockIncrement="0.1"
+                                                    cache="true"
+                                                    majorTickUnit="0.1"
+                                                    min="0"
+                                                    minorTickCount="0"
+                                                    snapToTicks="true"
+                                                    max="10"
+                                                    value="0.5"
+                                                    showTickLabels="true"
+                                                    showTickMarks="true"/>
+                                        </item>
+                                    </RibbonItem>
+                                </Column>
+                            </nodes>
+                        </RibbonGroup>
+                        <RibbonGroup title="Enjoying !">
+                            <nodes>
+                                <Button contentDisplay="TOP" onAction="#runDBScan"
+                                        prefHeight="100.0" prefWidth="75.0"
+                                        text="Run DBScan"
+                                        wrapText="true">
+                                    <graphic>
+                                        <ImageView>
+                                            <Image url="@../icons/icons8_Save_32px.png"/>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                                <Button contentDisplay="TOP" prefHeight="100.0"
+                                        prefWidth="75.0"
+                                        text="Stats"
+                                        wrapText="true">
+                                    <graphic>
+                                        <ImageView>
+                                            <Image url="@../icons/icons8_Underline_32px.png"/>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                            </nodes>
+                        </RibbonGroup>
+                    </ribbonGroups>
+                </RibbonTab>
+
                 <RibbonTab text="MODEL">
                 </RibbonTab>
                 <RibbonTab text="CHART">
                 </RibbonTab>
                 <RibbonTab text="TABLE">
-                </RibbonTab>
-                <RibbonTab text="ANIMATION">
-                </RibbonTab>
-                <RibbonTab text="NOTES">
                 </RibbonTab>
                 <!--<RibbonTab text="SERIES" contextualColor="blue">-->
                 <!--</RibbonTab>-->
